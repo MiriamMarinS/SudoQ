@@ -13,6 +13,8 @@ class Cell {
         int column;
         int box;
         vector< int > possible_values;
+        vector<int> colbox;
+        vector<int> rowbox;
     public:
         int getValue() {
             return value;
@@ -36,19 +38,19 @@ class Cell {
 
         void setBox() { // Set the box of the cell: from 1 to 9 (left to right and up to down)
             if (row < 3) {
-                if (column < 3) { box = 1;}
-                if (2 < column < 6) { box = 2;}
-                if (column > 5) { box = 3;}
+                if (column < 3) { box = 1; vector<int> colbox = {0, 1, 2}; vector<int> rowbox = {0, 1, 2};}
+                else if (2 < column && column < 6) { box = 2; vector<int> colbox = {3, 4, 5}; vector<int> rowbox = {0, 1, 2};}
+                else if (column > 5) { box = 3; vector<int> colbox = {6, 7, 8}; vector<int> rowbox = {0, 1, 2};}
             }
-            if (2 < row < 6) {
-                if (column < 3) { box = 4;}
-                if (2 < column < 6) { box = 5;}
-                if (column > 5) { box = 6;}
+            else if (2 < row && row < 6) {
+                if (column < 3) { box = 4; vector<int> colbox = {0, 1, 2}; vector<int> rowbox = {3, 4, 5};}
+                else if (2 < column && column < 6) { box = 5; vector<int> colbox = {3, 4, 5}; vector<int> rowbox = {3, 4, 5};}
+                else if (column > 5) { box = 6; vector<int> colbox = {6, 7, 8}; vector<int> rowbox = {3, 4, 5};}
             }
-            if (column > 5) {
-                if (column < 3) { box = 7;}
-                if (2 < column < 6) { box = 8;}
-                if (column > 5) { box = 9;}
+            else if (row > 5) {
+                if (column < 3) { box = 7; vector<int> colbox = {0, 1, 2}; vector<int> rowbox = {6, 7, 8};}
+                else if (2 < column && column < 6) { box = 8; vector<int> colbox = {3, 4, 5}; vector<int> rowbox = {6, 7, 8};}
+                else if (column > 5) { box = 9; vector<int> colbox = {6, 7, 8}; vector<int> rowbox = {6, 7, 8};}
             }
         }
 
@@ -56,66 +58,54 @@ class Cell {
             return box;
         }
     
-        bool inrows(int n, int grid[9][9]) { // Check if the value n is in the row
-            bool check = false;
+        // Check if the value n is in the row
+        bool inrows(int n, int grid[9][9]) { // Checked 11/09/2022
+            bool checkrow = false;
             for (int i = 0; i < 9; i++) {
                 if (grid[row][i] == n) {
-                    cout << grid[row][i];
-                    bool check = true;
+                    checkrow = true;
                     break;
                 }
             }
-            return check;
+            return checkrow;
         }
 
-        bool incolumns(int n, int grid[9][9]) { // Check if the value n is in the column
-            bool check = false;
+        // Check if the value n is in the column
+        bool incolumns(int n, int grid[9][9]) { // Checked 11/09/2022
+            bool checkcol = false;
             for (int i = 0; i < 9; i++) {
                 if (grid[i][column] == n) {
-                    bool check = true;
+                    checkcol = true;
                     break;
                 }
             }
-            return check;
+            return checkcol;
         }
 
-        bool combinations_and_check(int n, int grid[9][9], vector<int> vector1, vector<int> vector2) {
+        // Make tuple of combinations of rows and columns in box
+        bool combinations_and_check(int n, int grid[9][9]) {
             vector <tuple <int,int> > combination;
-            for (int v1 = 0; v1 < vector1.size(); v1++) { // Substitute 2 by vector1.size()
-                for (int v2 = 0; v2 < vector2.size(); v2++) { // Substitute 2 by vector2.size()
-                    combination.push_back(make_tuple(vector1[v1],vector2[v2]));
-                }
-                
+            for (int v1 = 0; v1 < rowbox.size(); v1++) { // Substitute 2 by rowbox.size()
+                for (int v2 = 0; v2 < colbox.size(); v2++) { // Substitute 2 by colbox.size()
+                    combination.push_back(make_tuple(rowbox[v1],colbox[v2]));
+                }    
             }
-            bool check = false;
+
+            bool checkbox = false;
             for (int c = 0; c < combination.size(); c++) {
+                cout << get<0>(combination[c]) << " " << get<1>(combination[c]); // Borrar
                 if (grid[get<0>(combination[c])][get<1>(combination[c])] == n) {
-                    check = true;
+                    checkbox = true;
                     break;
                 }
             }
-            return check;
+            return checkbox;
         }
 
-        bool inbox(int n, int grid[9][9]) { // Check if the value n is in the box
+        // Check if the value n is in the box
+        bool inbox(int n, int grid[9][9]) {
             bool check = false;
-            vector<int> colbox;
-            vector<int> rowbox;
-            if (column < 3) {
-                colbox = {0,1,2};
-            } else if (2 < column < 6) {
-                colbox = {3,4,5};
-            } else if (column > 5) {
-                colbox = {6,7,8};
-            }
-            if (row < 3) {
-                rowbox = {0,1,2};
-            } else if (2 < row < 6) {
-                rowbox = {3,4,5};
-            } else if (row > 5) {
-                rowbox = {6,7,8};
-            }
-            check = combinations_and_check(n, grid, colbox, rowbox);
+            check = combinations_and_check(n, grid);
             return check;
         }
 
@@ -206,8 +196,9 @@ int main() {
             if (cell.getValue() == 0) { // If the value is 0, check if there is any possible values
                 for (int value = 1; value < 10; value++) {
                     bool inR = cell.inrows(value, grid); bool inC = cell.incolumns(value, grid); bool inB = cell.inbox(value, grid);
-                    cout << "\n";
-                    if ((inR == false) && (inC == false) && (inB == false)) {        // If all are false: add possible value to a vector
+                    cout << inR << inC << inB;
+                    // cout << "\n"; // Borrar
+                    if (inR == false && inC == false && inB == false) {        // If all are false: add possible value to a vector
                         cell.addPossible_value(value);
                     }
                 }
@@ -223,10 +214,11 @@ int main() {
     for (int count = 0; count < 4; count++) { // Borrar
         // cout << cells.size() << "\n"; // Borrar
         for (int i = 0; i < cells.size(); i++) { // Iterate thought the 0 cells.
+            cout << "RCB: " << cells[i].getRow() << ";" << cells[i].getColumn() << ";" << cells[i].getBox() << "\n";
             cells[i].returnvalues(); // Borrar
             if (cells[i].possible_values_size() == 1) { // If the cell has only one possible value, set this value
                     cells[i].setValue(cells[i].getPossible_value(0));
-                    cout << "Unique value: " << cells[i].getPossible_value(0) << "\n"; // Borrar
+                    // cout << "Unique value: " << cells[i].getPossible_value(0) << "\n"; // Borrar
                     // cout << cells[i].getPossible_value(1); // Borrar
                     grid[cells[i].getRow()][cells[i].getColumn()] = cells[i].getValue(); // Add new value to grid
                     // cout << cells[i].getValue();
@@ -234,13 +226,13 @@ int main() {
             } else { // If the cell has more than one possible value, check which is more suitable
                 for (int n = 0; n < cells[i].possible_values_size(); n++) { // Iterate through the possible values
                     int val = cells[i].getPossible_value(n); // Take the possible value in each iteration
-                    cout << "Val: " << val << "\n";
+                    // cout << "Val: " << val << "\n";
                     bool inR = cells[i].inrows(val, grid); bool inC = cells[i].incolumns(val, grid); bool inB = cells[i].inbox(val, grid); // Check if the possible value is suitable for this position
-                    cout << "Checking, is in row/column/box? " << inR << inC << inB << "\n";
+                    // cout << "Checking, is in row/column/box? " << inR << inC << inB << "\n";
                     if ((inR == false) && (inC == false) && (inB == false)) {
-                        cout << "Checking if is the possible value of other cell" << "\n";
+                        // cout << "Checking if is the possible value of other cell" << "\n";
                         if (cells[i].check_neighbour_cells(cells, val) == false) { // Can it be in another part of the row/column/box? If not: set this value
-                            cout << "It is not the possible value of other cell\n";
+                            // cout << "It is not the possible value of other cell\n";
                             cells[i].setValue(val);
                             grid[cells[i].getRow()][cells[i].getColumn()] = cells[i].getValue(); // Add new value to grid
                             cells.erase(cells.begin() + i); // remove from cells vector de object cell which a value !=  0
