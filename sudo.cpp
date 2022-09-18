@@ -91,7 +91,7 @@ class Cell {
         }
 
         // Check if the value n is in the box
-        bool inbox(int n, int grid[9][9]) {
+        bool inbox(int n, int grid[9][9]) { // Checked 18/09/2022
             bool checkbox = false;
             for (int v1 = 0; v1 < rowbox.size(); v1++) { // Substitute 2 by rowbox.size()
                 for (int v2 = 0; v2 < colbox.size(); v2++) { // Substitute 2 by colbox.size()
@@ -199,7 +199,7 @@ int main() {
                     }
                 }
                 cells.push_back(cell); // Add each 0 cell to the cells vector
-                // cell.returnvalues();
+                // cell.returnvalues(); // Parece que está bien, Check!!!! Borrar
                 
             } else {
                 continue;
@@ -207,14 +207,16 @@ int main() {
         }
     }
 
+    // Checked the code above 18/09/2022
     // Second part: Iterate 0 cells and fill with the correct values
     while (!cells.empty()) { // while there are cells with 0 value
-    // for (int count = 0; count < 4; count++) { // Borrar
+    // for (int count = 0; count < 2; count++) { // Borrar
         // cout << cells.size() << "\n"; // Borrar
         for (int i = 0; i < cells.size(); i++) { // Iterate thought the 0 cells.
             // cout << "RCB: " << cells[i].getRow() << ";" << cells[i].getColumn() << ";" << cells[i].getBox() << "\n"; // Borrar
             // cells[i].returnvalues(); // Borrar
             if (cells[i].possible_values_size() == 1) { // If the cell has only one possible value, set this value
+                    // cout << "YES"<< count<<cells[i].getPossible_value(0); // Borrar
                     cells[i].setValue(cells[i].getPossible_value(0));
                     // cout << "Unique value: " << cells[i].getPossible_value(0) << "\n"; // Borrar
                     // cout << cells[i].getPossible_value(1); // Borrar
@@ -227,7 +229,7 @@ int main() {
                     // cout << "Val: " << val << "\n";
                     bool inR = cells[i].inrows(val, grid); bool inC = cells[i].incolumns(val, grid); bool inB = cells[i].inbox(val, grid); // Check if the possible value is suitable for this position
                     // cout << "Checking, is in row/column/box? " << inR << inC << inB << "\n";
-                    if ((inR == false) && (inC == false) && (inB == false)) {
+                    if (inR == false && inC == false && inB == false) {
                         // cout << "Checking if is the possible value of other cell" << "\n";
                         if (cells[i].check_neighbour_cells(cells, val) == false) { // Can it be in another part of the row/column/box? If not: set this value
                             // cout << "It is not the possible value of other cell\n";
