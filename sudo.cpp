@@ -12,6 +12,7 @@ class Cell {
         int row;
         int column;
         int box;
+        int id;
         vector< int > possible_values;
         vector<int> colbox;
         vector<int> rowbox;
@@ -36,6 +37,14 @@ class Cell {
             column = c;
         }
 
+        void setid(int i) {
+            id = i;
+        }
+        
+        int getid() {
+            return id;
+        }
+
         void setBox() { // Set the box of the cell: from 1 to 9 (left to right and up to down)
             if (row < 3) {
                 if (column < 3) { box = 1; colbox = {0, 1, 2}; rowbox = {0, 1, 2};}
@@ -54,13 +63,6 @@ class Cell {
             }
         }
 
-        void returnvaluesrowcol() { // Borrar
-            for (int i=0; i < rowbox.size(); i++) {
-                cout << "row" << rowbox[i] << ",";
-                cout << "col" << colbox[i] << ",";
-            }
-            cout << endl;
-        }
 
         int getBox() {
             return box;
@@ -116,35 +118,65 @@ class Cell {
         int getPossible_value(int position) { // Get the possible value in position n of the vector of possible values
             return possible_values[position];
         }
-        void returnvalues() { // Borrar
-            for (int i=0; i < possible_values.size(); i++) {
-                cout << possible_values[i] << ",";
+        
+        void removeValue(int value, Cell cell) {
+            for (int i = 0; i < cell.possible_values_size(); i++) {
+                if (cell.getPossible_value(i) == value) {
+                    cell.removePossible_value(i);
+                }
             }
-            cout << endl;
         }
-        bool check_neighbour_cells(vector <Cell> cells, int val) {
-            bool check = false;
+        
+        bool check_neighbour_cells(int value, vector<Cell> cells) {
+            bool checkr = false; bool checkc = false; bool checkb = false;
             for (int i = 0; i < cells.size(); i++) {
-                // Check in rows
-                if ((cells[i].getRow()) == (row && cells[i].getColumn() != column)) {
-                    if (find(cells[i].possible_values.begin(), cells[i].possible_values.end(), val) == cells[i].possible_values.end()) {
-                        bool check = true;
+                if (cells[i].getid() != id) {
+                    if (cells[i].getRow() == row) {
+                        for (int j = 0; j < cells[i].possible_values_size(); j++) {
+                            if (cells[i].getPossible_value(j) == value) {
+                                checkr = true;
+                            }
+                        }
+                    }
+                    if (cells[i].getColumn() == column) {
+                        for (int j = 0; j < cells[i].possible_values_size(); j++) {
+                            if (cells[i].getPossible_value(j) == value) {
+                                checkc = true;
+                            }
+                        }
+                    }
+                    if (cells[i].getBox() == box) {
+                        for (int j = 0; j < cells[i].possible_values_size(); j++) {
+                            if (cells[i].getPossible_value(j) == value) {
+                                checkb = true;
+                            }
+                        }
                     }
                 }
-                // Check in columns
-                if ((cells[i].getColumn() == column) && (cells[i].getRow() != row)) {
-                    if (find(cells[i].possible_values.begin(), cells[i].possible_values.end(), val) == cells[i].possible_values.end()) {
-                        bool check = true;
-                    }
-                }
-                // Check in box
-                if ((cells[i].getBox() == box) && (cells[i].getRow() != row) && (cells[i].getColumn() != column)) {
-                    if (find(cells[i].possible_values.begin(), cells[i].possible_values.end(), val) == cells[i].possible_values.end()) {
-                        bool check = true;
-                    }
-                }
+            }
+            bool check;
+            if (checkr == false or checkc == false or checkb == false) {
+                check = false;
+            } else {
+                check = true;
             }
             return check;
+        }
+
+        void quit_possiblevalue(int value, vector<Cell> cells) {
+            for (int i = 0; i < cells.size(); i++) {
+                if (cells[i].getid() == id) {
+                    if (cells[i].getRow() == row) {
+                        cells[i].removeValue(value, cells[i]);
+                        }
+                    if (cells[i].getColumn() == column) {
+                        cells[i].removeValue(value, cells[i]);
+                    }
+                    if (cells[i].getBox() == box) {
+                        cells[i].removeValue(value, cells[i]);
+                    }
+                }
+             }
         }
 };
 
@@ -180,6 +212,8 @@ int main() {
 
     vector<Cell> cells; // vector for all the 0 cell
 
+    int id = 1;
+
     // First part: Iterate cells and keep the possible values
     for (int row = 0; row < 9; row++) {
         for (int column = 0; column < 9; column++) {
@@ -188,6 +222,7 @@ int main() {
             cell.setColumn(column); // Add column to the object
             cell.setBox(); // Set the box
             cell.setValue(grid[row][column]); // Add cell value to the object
+            cell.setid(id);
             if (cell.getValue() == 0) { // If the value is 0, check if there is any possible values
                 // cell.returnvaluesrowcol(); // Borrar
                 for (int value = 1; value < 10; value++) {
@@ -204,44 +239,26 @@ int main() {
             } else {
                 continue;
             }
+            id += 1;
         }
     }
 
     // Checked the code above 18/09/2022
     // Second part: Iterate 0 cells and fill with the correct values
     while (!cells.empty()) { // while there are cells with 0 value
-    // for (int count = 0; count < 2; count++) { // Borrar
-        // cout << cells.size() << "\n"; // Borrar
         for (int i = 0; i < cells.size(); i++) { // Iterate thought the 0 cells.
-            // cout << "RCB: " << cells[i].getRow() << ";" << cells[i].getColumn() << ";" << cells[i].getBox() << "\n"; // Borrar
-            // cells[i].returnvalues(); // Borrar
-            if (cells[i].possible_values_size() == 1) { // If the cell has only one possible value, set this value
-                    // cout << "YES"<< count<<cells[i].getPossible_value(0); // Borrar
-                    cells[i].setValue(cells[i].getPossible_value(0));
-                    // cout << "Unique value: " << cells[i].getPossible_value(0) << "\n"; // Borrar
-                    // cout << cells[i].getPossible_value(1); // Borrar
-                    grid[cells[i].getRow()][cells[i].getColumn()] = cells[i].getValue(); // Add new value to grid
-                    // cout << cells[i].getValue();
-                    cells.erase(cells.begin() + i); // remove from cells vector the object cell which a value !=  0
-            } else { // If the cell has more than one possible value, check which is more suitable
-                for (int n = 0; n < cells[i].possible_values_size(); n++) { // Iterate through the possible values
-                    int val = cells[i].getPossible_value(n); // Take the possible value in each iteration
-                    // cout << "Val: " << val << "\n";
-                    bool inR = cells[i].inrows(val, grid); bool inC = cells[i].incolumns(val, grid); bool inB = cells[i].inbox(val, grid); // Check if the possible value is suitable for this position
-                    // cout << "Checking, is in row/column/box? " << inR << inC << inB << "\n";
-                    if (inR == false && inC == false && inB == false) {
-                        // cout << "Checking if is the possible value of other cell" << "\n";
-                        if (cells[i].check_neighbour_cells(cells, val) == false) { // Can it be in another part of the row/column/box? If not: set this value
-                            // cout << "It is not the possible value of other cell\n";
-                            cells[i].setValue(val);
-                            grid[cells[i].getRow()][cells[i].getColumn()] = cells[i].getValue(); // Add new value to grid
-                            cells.erase(cells.begin() + i); // remove from cells vector de object cell which a value !=  0
-                            break;
-                        }
-                    } else {
-                        // cout << "YES arriba\n";
-                        cells[i].removePossible_value(n); // If it is not suitable now, remove from the possible values
+            for (int j = 0; j < cells[i].possible_values_size(); j++) {
+                bool inR = cells[i].inrows(cells[i].getPossible_value(j), grid);
+                bool inC = cells[i].incolumns(cells[i].getPossible_value(j), grid);
+                bool inB = cells[i].inbox(cells[i].getPossible_value(j), grid);
+                if (inR == false && inC == false && inB == false) { // If the cell has only one possible value, set this value
+                    if (cells[i].check_neighbour_cells(cells[i].getPossible_value(j), cells) == false) {
+                        cells[i].setValue(cells[i].getPossible_value(j)); // It can be removed. If the next line is changed at the end as follows: cells[i].getPossible-value(j);
+                        grid[cells[i].getRow()][cells[i].getColumn()] = cells[i].getValue();
+                        cells.erase(cells.begin() + i);
                     }
+                } else {
+                    cells[i].removePossible_value(j);
                 }
             }
         }
