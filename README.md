@@ -1,5 +1,6 @@
-# SOLVING SUDOQ
+# SOLVING SudoQ
 
+Windows:
 ```
 g++ -o obj/sudo.o -c src/sudo.cpp -I include/
 g++ -o obj/cell.o -c src/cell.cpp -I include/
